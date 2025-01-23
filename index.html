@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/milligram/1.4.1/milligram.min.css"
+        integrity="sha512-xiunq9hpKsIcz42zt0o2vCo34xV0j6Ny8hgEylN3XBglZDtTZ2nwnqF/Z/TTCc18sGdvCjbFInNd++6q3J0N6g=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        .spinner_hidden[class] {
+            position: absolute;
+            top: -10000px;
+        }
+
+        .error,
+        .error-number {
+            color: crimson;
+        }
+    </style>
+</head>
+
+<body>
+    <form class="form" action="">
+        <input class="input" type="number" placeholder="Введите количество фактов">
+        <button class="button button-outline number_button"><i
+                class="fa-solid fa-spinner fa-spin spinner spinner_hidden"></i>Гав</button>
+    </form>
+    <div class="wrapper-result">
+    </div>
+    <h3 class="error-number"></h3>
+    <h2 class="error"></h2>
+    <script src="https://kit.fontawesome.com/80d0029610.js" crossorigin="anonymous"></script>
+    <script>
+        const formBlock = document.querySelector('.form');
+        const inputBlock = document.querySelector('.input');
+        const numberButtonBlock = document.querySelector('.number_button');
+        const errorNumberBlock = document.querySelector('.error-number');
+        const errorBlock = document.querySelector('.error');
+        const spinnerBlock = document.querySelector('.spinner');
+        const wrapperResultBlock = document.querySelector('.wrapper-result');
+
+        formBlock.addEventListener('submit', (event) => {
+            event.preventDefault();
+            numberButtonBlock.setAttribute('disabled', true);
+            spinnerBlock.classList.remove('spinner_hidden');
+            errorBlock.classList.add('hidden');
+            errorNumberBlock.textContent = '';
+            errorBlock.textContent = '';
+            wrapperResultBlock.textContent = '';
+
+            const number = inputBlock.value;
+
+            if (!number) {
+                errorNumberBlock.classList.remove('hidden');
+                errorNumberBlock.textContent = 'Введите число';
+                numberButtonBlock.removeAttribute('disabled');
+                spinnerBlock.classList.add('spinner_hidden');
+            }
+
+            fetch(`https://dog-api.kinduff.com/api/facts?number=${number}`)
+                .then(response => {
+                    if (response.status !== 200) {
+                        throw new Error(`Status ${response.status}: ${response.statusText}`)
+                    }
+                    return response.json();
+                })
+                .then((data) => {
+                    for (let i = 0; i < number; i += 1) {
+                        errorNumberBlock.classList.remove('hidden');
+                        const resultBlock = document.createElement('div');
+                        resultBlock.textContent = `факт ${i} - ${data.facts[i]}`;
+                        resultBlock.classList.add('result-fact');
+                        wrapperResultBlock.appendChild(resultBlock);
+                    }
+                })
+                .catch((error) => {
+                    errorBlock.textContent = error.message ? error.message : error;
+                })
+                .finally(() => {
+                    numberButtonBlock.removeAttribute('disabled');
+                    spinnerBlock.classList.add('spinner_hidden');
+                    inputBlock.value = '';
+                });
+        });
+    </script>
+</body>
+
+</html>
